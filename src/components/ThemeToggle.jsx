@@ -13,7 +13,13 @@ const ThemeToggle = () => {
     document.querySelector("html").classList.toggle("dark", theme === "dark");
   }, [theme]);
 
-
+  const handleToggle = (e) => {
+    if (e.target.checked) {
+      setTheme("dark");
+    } else {
+      setTheme("light");
+    }
+  };
 
   return (
     <label className="swap swap-rotate">
