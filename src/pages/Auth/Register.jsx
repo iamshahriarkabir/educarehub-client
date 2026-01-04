@@ -11,7 +11,6 @@ const Register = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  // --- NEW: State for the confirm password field's visibility ---
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
@@ -19,7 +18,7 @@ const Register = () => {
     handleSubmit,
     reset,
     setError,
-    watch, // We need watch to compare password fields
+    watch,
     formState: { errors },
   } = useForm();
 
@@ -35,28 +34,30 @@ const Register = () => {
     const toastId = toast.loading("Creating account...");
 
     createUser(data.email, data.password)
-      .then(() => {
+      .then((result) => {
+        // Firebase user creation successful
         updateUserProfile(data.name, data.photoURL)
           .then(() => {
             toast.success("Registration Successful!", { id: toastId });
             reset();
-            navigate("/");
+            navigate("/"); // Go to Home Page
           })
           .catch((error) => {
             toast.error(error.message, { id: toastId });
+            setIsSubmitting(false);
           });
       })
       .catch((error) => {
-        toast.error("Registration Failed. Please try again.", { id: toastId });
+        setIsSubmitting(false);
         if (error.code === "auth/email-already-in-use") {
+          toast.error("Email already in use!", { id: toastId });
           setError("email", {
             type: "manual",
             message: "This email is already registered.",
           });
+        } else {
+          toast.error("Registration Failed. Please try again.", { id: toastId });
         }
-      })
-      .finally(() => {
-        setIsSubmitting(false);
       });
   };
 
@@ -73,7 +74,7 @@ const Register = () => {
   };
 
   return (
-    <div className="hero min-h-screen bg-base-200">
+    <div className="hero min-h-screen bg-base-200 py-10">
       <div className="hero-content flex-col lg:flex-row">
         <div className="text-center lg:text-left lg:pr-10 max-w-lg">
           <h1 className="text-5xl font-bold">Join Us Now!</h1>
@@ -84,7 +85,7 @@ const Register = () => {
         </div>
         <div className="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
           <form onSubmit={handleSubmit(onSubmit)} className="card-body">
-            {/* Name, Photo URL, and Email fields remain the same */}
+            {/* Name Field */}
             <div className="form-control">
               <label className="label">
                 <span className="label-text">Name</span>
@@ -103,6 +104,8 @@ const Register = () => {
                 </span>
               )}
             </div>
+
+            {/* Photo URL Field */}
             <div className="form-control">
               <label className="label">
                 <span className="label-text">Photo URL</span>
@@ -121,6 +124,8 @@ const Register = () => {
                 </span>
               )}
             </div>
+
+            {/* Email Field */}
             <div className="form-control">
               <label className="label">
                 <span className="label-text">Email</span>
@@ -140,7 +145,7 @@ const Register = () => {
               )}
             </div>
 
-            {/* Password Field */}
+            {/* Password Field - FIXED REGEX */}
             <div className="form-control">
               <label className="label">
                 <span className="label-text">Password</span>
@@ -155,7 +160,8 @@ const Register = () => {
                       message: "Password must be at least 6 characters",
                     },
                     pattern: {
-                      value: /(?=.[A-Z])(?=.[a-z])/,
+                      // Corrected Regex: Looks for at least one lowercase AND one uppercase anywhere
+                      value: /(?=.*[a-z])(?=.*[A-Z])/,
                       message:
                         "Password must contain an uppercase and a lowercase letter",
                     },
@@ -179,7 +185,7 @@ const Register = () => {
               )}
             </div>
 
-            {/* --- NEW: Confirm Password Field --- */}
+            {/* Confirm Password Field */}
             <div className="form-control">
               <label className="label">
                 <span className="label-text">Confirm Password</span>
@@ -226,7 +232,6 @@ const Register = () => {
             </div>
           </form>
 
-          {/* Social login and link to login page remain the same */}
           <div className="divider px-8">OR</div>
           <div className="p-4 pt-0 text-center">
             <button

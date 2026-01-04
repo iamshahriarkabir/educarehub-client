@@ -6,21 +6,23 @@ const ErrorPage = () => {
   const error = useRouteError();
 
   useEffect(() => {
-    document.title = "EducareHub | Error";
+    document.title = "EducareHub | 404 Error";
   }, []);
 
   return (
-    <section className="flex items-center h-screen p-16 bg-base-100 text-base-content">
+    <section className="flex items-center h-screen bg-base-100 text-base-content">
       <div className="container flex flex-col items-center justify-center px-5 mx-auto my-8">
         <div className="max-w-md text-center">
-          <h2 className="mb-8 font-extrabold text-9xl text-gray-400">
-            <span className="sr-only">Error</span>404
+          <img 
+            src="https://i.ibb.co/vzD7j0N/404.png" 
+            alt="404 Error" 
+            className="w-full max-w-xs mx-auto mb-8"
+          />
+          <h2 className="mb-4 font-bold text-3xl">
+            Page Not Found
           </h2>
-          <p className="text-2xl font-semibold md:text-3xl mb-8">
-            Sorry, we couldn't find this page.
-          </p>
-          <p className="text-red-500 mb-8">
-            <i>{error.statusText || error.message}</i>
+          <p className="text-gray-500 mb-8">
+            Sorry, we couldn't find the page you're looking for. It might have been removed or renamed.
           </p>
           <Link to="/" className="btn btn-primary">
             <FaArrowLeft className="mr-2" /> Back to homepage

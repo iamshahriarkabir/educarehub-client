@@ -11,6 +11,7 @@ import {
 } from "firebase/auth";
 import auth from "../firebase/firebase.config";
 import { saveUser } from "../api/lib";
+import axiosInstance from "../api/axios"; // Axios ইম্পোর্ট করা হলো
 
 export const AuthContext = createContext(null);
 
@@ -47,20 +48,46 @@ const AuthProvider = ({ children }) => {
   };
 
   // Log out
-  const logOut = () => {
+  const logOut = async () => {
     setLoading(true);
+    // সার্ভার থেকে কুকি রিমুভ করা হচ্ছে
+    try {
+      await axiosInstance.post("/logout");
+    } catch (error) {
+      console.error("Logout error from server:", error);
+    }
     return signOut(auth);
   };
 
   // Observer for auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       console.log("Current User:", currentUser);
 
-      // After successful login/registration, save user to DB
       if (currentUser) {
-        saveUser(currentUser);
+        // ১. ইউজার ডাটাবেসে সেভ করা (যদি নতুন হয়)
+        try {
+          await saveUser(currentUser);
+        } catch (err) {
+          console.log("Save user error:", err);
+        }
+
+        // ২. JWT টোকেন জেনারেট করা
+        const userInfo = { email: currentUser.email };
+        try {
+          await axiosInstance.post("/jwt", userInfo);
+          console.log("Token generated successfully");
+        } catch (err) {
+          console.error("Token generation failed:", err);
+        }
+      } else {
+        // ইউজার না থাকলে টোকেন ক্লিয়ার করা (যদি কোনো কারণে থেকে যায়)
+        try {
+          await axiosInstance.post("/logout");
+        } catch (err) {
+          console.log("Token cleared");
+        }
       }
 
       setLoading(false);
